@@ -2,7 +2,9 @@
 title: "Regression Analysis"
 author: "Michael Bristow"
 date: "10 December 2017"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -10,21 +12,114 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## R Markdown
+Regression Models - Peer Assesement 1
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+##Issue/Problem
+Take the mtcars data set and write up an analysis to answer their question using regression models and exploratory data analyses.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Your report must be:
 
-```{r cars}
-summary(cars)
+Written as a PDF printout of a compiled (using knitr) R markdown document.
+
+Brief. Roughly the equivalent of 2 pages or less for the main text. 
+
+Supporting figures in an appendix can be included up to 5 total pages including the 2 for the main report. The appendix can only include figures.
+    Include a first paragraph executive summary.
+    
+##Executuve Summary
+This report looks at historic data and trys to find drivers for MPG.
+It will look at trwo main items  
+
+* Is an automatic or manual transmission better for MPG  
+* Quantify the MPG difference between automatic and manual  
+ transmissions
+ 
+#Data Processing/Analysis
+First load the data
+```{r}
+library(ggplot2)
+data(mtcars)
+xx <- mtcars
+#convert "am"to a factor
+mtcars$am <- as.factor(mtcars$am)
+levels(mtcars$am) <-c("AT", "MT")
+
+summary(mtcars)
+head(mtcars)
+
+```
+Apply regsubsets to find best variable selection
+
+```{r}
+library(leaps)
+reg.best<- regsubsets(mpg~.,mtcars,nvmax=5)
+summary(reg.best)
+
+reg.summary<- summary(reg.best)
+names(reg.summary)
+
+```
+Look at the best r squared
+
+```{r}
+reg.summary$rsq
+
+```
+As can be seen, "weight" is the biggest "driver" of mpg followed by number of cylinders. 
+
+Our model should include  
+
+- weight
+- cylinders
+
+By adding more variaqbles, the r-squared only increases by small amounts and
+we need to be wary of overfitting
+
+Plot weight against mpg and show regression line
+
+```{r}
+ggplot(data = xx, aes(x = wt, y = mpg)) + 
+  geom_point(color='red') +
+  geom_smooth(method = "lm", color = "blue") +
+  labs(x = "Vehicle weight") +
+  labs(y = "Miles per gallon")
 ```
 
-## Including Plots
+As can be seen there is a direct correlation between the vehicle weight and it mpg
 
-You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+wtdata <- lm(mpg~wt+cyl, data = mtcars)
+summary(wtdata)
+
 ```
+We can see that each extra ton in weight changes MPG by `r coef(wtdata)[2]` when we use the full model using weight and cylinders
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+#Effect of Transmission type on MPG
+Question is, which has better MPG - Manual or Automatic
+We do this by running a regression using ONLY transmission type
+
+```{r}
+fit <- lm(mpg~am, data = mtcars)
+summary(fit)
+
+```
+It shows that on average
+
+- a car has 17.147 mpg with automatic transmission, and if it is manual transmission, 7.245 mpg is increased. 
+- has the Residual standard error as 4.902 on 30 degrees of freedom. 
+- the Adjusted R-squared value is 0.3385, which means that the model can explain about 34% of the variance of the MPG variable. 
+- The low Adjusted R-squared value also indicates that we need to add other variables to the model.
+ 
+```{r}
+
+```
+#Conclusion
+Here are the conclusions fromn the analysis
+
+- The primary driver of MPG is the cars weight
+- The "optimal" model is to inlcude weight and cylinders
+- By adding more variables, the r-quared value only increases marginally and we are in danger of overfitting the model
+- Transmission typoe also has an efefct on MPG
+- Having a manual transmission increases MPG by 7.245
