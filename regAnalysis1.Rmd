@@ -3,8 +3,8 @@ title: "Regression Analysis"
 author: "Michael Bristow"
 date: "10 December 2017"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -87,13 +87,18 @@ ggplot(data = xx, aes(x = wt, y = mpg)) +
 
 As can be seen there is a direct correlation between the vehicle weight and it mpg
 
-
+ 
 ```{r}
 wtdata <- lm(mpg~wt+cyl, data = mtcars)
 summary(wtdata)
 
 ```
 We can see that each extra ton in weight changes MPG by `r coef(wtdata)[2]` when we use the full model using weight and cylinders
+
+Looking at the residual plot shows a random scattering of values
+```{r}
+plot(wtdata)
+```
 
 
 #Effect of Transmission type on MPG
@@ -103,7 +108,6 @@ We do this by running a regression using ONLY transmission type
 ```{r}
 fit <- lm(mpg~am, data = mtcars)
 summary(fit)
-
 ```
 It shows that on average
 
